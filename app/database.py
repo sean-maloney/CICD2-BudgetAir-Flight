@@ -4,6 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 
+from .models import Base
+
 # Pick env file by APP_ENV (default dev)
 envfile = {
     "dev": ".env.dev",
@@ -28,7 +30,9 @@ connect_args=connect_args)
             pass
         break
     except OperationalError:
-        ime.sleep(DELAY)
+        time.sleep(DELAY)
+
+
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False,
 expire_on_commit=False)
 def get_db():
