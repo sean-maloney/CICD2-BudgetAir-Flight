@@ -11,7 +11,7 @@ FlightDepartureTimeStr = Annotated[str, StringConstraints(min_length=5, max_leng
 FlightArrivalTimeStr = Annotated[str, StringConstraints(min_length=5, max_length=5)] #23:10
 FlightDepartureDateStr = Annotated[str, StringConstraints(min_length=10, max_length=10)]
 FlightArrivalDate = Annotated[str, StringConstraints(min_length=10, max_length=10)] #12/11/2025
-FlightPriceStr = Annotated[str, StringConstraints(pattern=r"^€\d{7}$")]
+FlightPriceStr = Annotated[str, StringConstraints(min_length=1, max_length=100)]
 CompanyNameStr = Annotated[str, StringConstraints(min_length=1, max_length=100)]
 CompanyAirlineCodeStr = Annotated[str, StringConstraints(min_length=1, max_length=3)]
 CompanyCountryStr = Annotated[str, StringConstraints(min_length=2, max_length=100)]
@@ -26,9 +26,10 @@ class FlightCreate(BaseModel):
     destination: FlightDestinationStr
     departure_time: FlightDepartureTimeStr
     arrival_time: FlightArrivalTimeStr
-    depature_date: FlightDepartureDateStr
+    departure_date: FlightDepartureDateStr
     arrival_date: FlightArrivalDate
     price: FlightPriceStr
+    company_id: int
  
 class FlightUpdate(BaseModel):
     name: FlightNameStr
@@ -37,9 +38,22 @@ class FlightUpdate(BaseModel):
     destination: FlightDestinationStr
     departure_time: FlightDepartureTimeStr
     arrival_time: FlightArrivalTimeStr
-    depature_date: FlightDepartureDateStr
+    departure_date: FlightDepartureDateStr
     arrival_date: FlightArrivalDate
     price: FlightPriceStr
+    company_id: int
+
+class FlightPatch(BaseModel):
+    name: Optional[FlightNameStr] = None
+    flight_id: Optional[FlightIdStr] = None
+    origin: Optional[FlightOriginStr] = None
+    destination: Optional[FlightDestinationStr] = None
+    departure_time: Optional[FlightDepartureTimeStr] = None
+    arrival_time: Optional[FlightArrivalTimeStr] = None
+    departure_date: Optional[FlightDepartureDateStr] = None
+    arrival_date: Optional[FlightArrivalDate] = None
+    price: Optional[FlightPriceStr] = None
+    company_id: Optional[int] = None
  
 class FlightRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -50,9 +64,10 @@ class FlightRead(BaseModel):
     destination: FlightDestinationStr
     departure_time: FlightDepartureTimeStr
     arrival_time: FlightArrivalTimeStr
-    depature_date: FlightDepartureDateStr
+    departure_date: FlightDepartureDateStr
     arrival_date: FlightArrivalDate
     price: FlightPriceStr
+    company_id: int
 
 
 # ---------- Company ----------
