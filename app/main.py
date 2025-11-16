@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 from .database import engine, SessionLocal
 from .models import Base, FlightDB, CompanyDB
-from .schemas import (FlightCreate, FlightUpdate, FlightRead, FlightReadWithCompany, FlightCreateForCompany, CompanyCreate, CompanyRead, CompanyUpdate)
+from .schemas import (FlightCreate, FlightUpdate, FlightPatch, FlightRead, FlightReadWithCompany, FlightCreateForCompany, CompanyCreate, CompanyRead, CompanyUpdate)
 
 app = FastAPI()
 
@@ -49,26 +49,6 @@ async def lifespan(app: FastAPI):
     #Optionally close pools, flush queses, etc
     #SessionLocal.close_all()
  
-def get_db():
-  db = SessionLocal()
-  try:
-    yield db
-  finally:
-    db.close()
- 
-#tests if we can connect to database, if not retry
-def commit_or_rollback(db: Session, error_msg: str):
-  try:
-    db.commit()
-  except IntegrityError:
-    db.rollback()
-    raise HTTPException(status_code=409, detail=error_msg)
- 
- #checks health returns if ok
-@app.get("/health")
-def health():
-  return {"status": "ok"}
- 
 #company create
 @app.post("/api/companies",response_model= CompanyRead,status_code=status.HTTP_201_CREATED)
 def create_company(company: CompanyCreate, db:Session = Depends(get_db)):
@@ -80,12 +60,12 @@ def create_company(company: CompanyCreate, db:Session = Depends(get_db)):
 
 #get companies
 @app.get("/api/companies", response_model=list[CompanyRead])
-def list_courses(limit: int = 10, offset: int = 0, db: Session = Depends(get_db)):
-  stmt = select(CompanyDB).order_by(CompanyDB.company_id).limit(limit).offset(offset)
+def list_courses(db: Session = Depends(get_db)):
+  stmt = select(CompanyDB).order_by(CompanyDB.company_id)
   return db.execute(stmt).scalars().all()
 
 @app.get("/api/companies/{company_id}", response_model=CompanyRead)
-def get_company(company_id: int = 10, offset: int = 0, db:Session=Depends(get_db)):
+def get_company(company_id: int, db:Session=Depends(get_db)):
    company = db.get(CompanyDB, company_id)
    if not company:
       raise HTTPException(status_code=404, detail="Company not found!")
@@ -114,7 +94,7 @@ def update_company(company_id: int, updated:CompanyCreate, db:Session = Depends(
   return company
 
 #patch
-@app.patch("api/companies/{company_id}", response_model=CompanyRead)
+@app.patch("/api/companies/{company_id}", response_model=CompanyRead)
 def patch_company(company_id: int, updated: CompanyUpdate, db:Session = Depends(get_db)):
   company = db.get(CompanyDB, company_id)
   if not company:
@@ -129,7 +109,7 @@ def patch_company(company_id: int, updated: CompanyUpdate, db:Session = Depends(
   return company
 
 #company delete
-@app.delete("api/companies/{company_id}", status_code=204)
+@app.delete("/api/companies/{company_id}", status_code=204)
 def delete_company(company_id: int, db:Session=Depends(get_db)):
   company = db.get(CompanyDB, company_id)
   if not company:
@@ -152,12 +132,10 @@ def create_flight(flight: FlightCreate, db:Session = Depends(get_db)):
 
 #list flights
 @app.get("/api/flights", response_model=list[FlightRead])
-def list_flights(limit: int = 10, offset: int = 0, db:Session = Depends(get_db)):
+def list_flights(db:Session = Depends(get_db)):
   stmt = (
     select(FlightDB)
     .order_by(FlightDB.id)
-    .limit(limit)
-    .offset(offset)
   )
   return db.execute(stmt).scalars().all()
 
@@ -179,7 +157,7 @@ def get_flight(flight_id: int, db:Session=Depends(get_db)):
 
 #patch flight
 @app.patch("/api/flight/{flight_id}", response_model=FlightRead)
-def patch_flight(flight_id: int, updated: FlightUpdate, db: Session = Depends(get_db)):
+def patch_flight(flight_id: int, updated: FlightPatch, db: Session = Depends(get_db)):
   flight = db.get(FlightDB, flight_id)
   if not flight:
     raise HTTPException(status_code=404, detail="Flight not found")
@@ -205,7 +183,7 @@ def update_flight(flight_id: int, updated: FlightUpdate, db: Session = Depends(g
   flight.destination = updated.destination
   flight.departure_time = updated.departure_time
   flight.arrival_time = updated.arrival_time
-  flight.depature_date = updated.depature_date
+  flight.departure_date = updated.departure_date
   flight.arrival_date = updated.arrival_date
   flight.price = updated.price
   flight.company_id = updated.company_id
@@ -230,7 +208,7 @@ def delete_flight(flight_id : int, db:Session = Depends(get_db)):
   return Response(status_code=204)
 
 #Nested: Create flight for a company
-@app.post("api/companies/{company_id}/flights", response_model=FlightRead, status_code=201)
+@app.post("/api/companies/{company_id}/flights", response_model=FlightRead, status_code=201)
 def create_flight_for_company(company_id: int, flight: FlightCreateForCompany, db: Session = Depends(get_db)):
   company = db.get(CompanyDB, company_id)
   if not company:
@@ -245,3 +223,14 @@ def create_flight_for_company(company_id: int, flight: FlightCreateForCompany, d
   db.refresh(db_flight)
 
   return db_flight
+
+@app.get("/api/companies/{company_id}/flights", response_model=list[FlightRead])
+def list_flights_for_company(company_id: int, db: Session = Depends(get_db)):
+  stmt = select(FlightDB).where(FlightDB.company_id == company_id)
+  flights = db.execute(stmt).scalars().all()
+
+  if not flights:
+    if not db.get(CompanyDB, company_id):
+      raise HTTPException(status_code=404, detail="Company not found")
+    
+  return flights

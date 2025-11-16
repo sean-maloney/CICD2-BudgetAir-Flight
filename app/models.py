@@ -16,7 +16,7 @@ class FlightDB(Base):
     destination: Mapped[str] = mapped_column(String(255), nullable=False)
     departure_time: Mapped[str] = mapped_column(String(5), nullable=False)
     arrival_time: Mapped[str] = mapped_column(String(5), nullable=False)
-    depature_date: Mapped[str] = mapped_column(String(10), nullable=False)
+    departure_date: Mapped[str] = mapped_column(String(10), nullable=False)
     arrival_date: Mapped[str] = mapped_column(String(10), nullable=False)
     price: Mapped[str] = mapped_column(String(10), nullable=False)
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.company_id", ondelete="CASCADE"), nullable=False)
