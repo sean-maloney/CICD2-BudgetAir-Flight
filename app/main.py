@@ -68,7 +68,7 @@ def list_courses(db: Session = Depends(get_db)):
 def get_company(company_id: int, db:Session=Depends(get_db)):
    company = db.get(CompanyDB, company_id)
    if not company:
-      raise HTTPException(status_code=404, detail="Company not found!")
+      raise HTTPException(status_code=404, detail="company not found")
    return company
  
 #update
@@ -76,7 +76,7 @@ def get_company(company_id: int, db:Session=Depends(get_db)):
 def update_company(company_id: int, updated:CompanyCreate, db:Session = Depends(get_db)):
   company = db.get(CompanyDB, company_id)
   if not company:
-    raise HTTPException(status_code=404, detail="Company not found!")
+    raise HTTPException(status_code=404, detail="company not found")
   
   company.code = updated.code
   company.name = updated.name
@@ -98,9 +98,9 @@ def update_company(company_id: int, updated:CompanyCreate, db:Session = Depends(
 def patch_company(company_id: int, updated: CompanyUpdate, db:Session = Depends(get_db)):
   company = db.get(CompanyDB, company_id)
   if not company:
-    raise HTTPException(status_code=404, detail="Company not found!")
+    raise HTTPException(status_code=404, detail="company not found")
   
-  changes = updated.model_dump(excluse_unset=True,exclude_none=True)
+  changes = updated.model_dump(exclude_unset=True, exclude_none=True)
   for field, value in changes.items():
     setattr(company, field, value)
 
@@ -156,7 +156,7 @@ def get_flight(flight_id: int, db:Session=Depends(get_db)):
 
 
 #patch flight
-@app.patch("/api/flight/{flight_id}", response_model=FlightRead)
+@app.patch("/api/flights/{flight_id}", response_model=FlightRead)
 def patch_flight(flight_id: int, updated: FlightPatch, db: Session = Depends(get_db)):
   flight = db.get(FlightDB, flight_id)
   if not flight:
