@@ -19,6 +19,8 @@ class FlightDB(Base):
     departure_date: Mapped[str] = mapped_column(String(10), nullable=False)
     arrival_date: Mapped[str] = mapped_column(String(10), nullable=False)
     price: Mapped[str] = mapped_column(String(10), nullable=False)
+    business_seats: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    economy_seats: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.company_id", ondelete="CASCADE"), nullable=False)
     company: Mapped["CompanyDB"] = relationship(back_populates="flights")
 
