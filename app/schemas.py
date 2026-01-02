@@ -12,6 +12,7 @@ FlightArrivalTimeStr = Annotated[str, StringConstraints(min_length=5, max_length
 FlightDepartureDateStr = Annotated[str, StringConstraints(min_length=10, max_length=10)]
 FlightArrivalDate = Annotated[str, StringConstraints(min_length=10, max_length=10)] #12/11/2025
 FlightPriceStr = Annotated[str, StringConstraints(min_length=1, max_length=100)]
+FlightSeatsInt = Annotated[int, Ge(0), Le(1000)]
 CompanyNameStr = Annotated[str, StringConstraints(min_length=1, max_length=100)]
 CompanyAirlineCodeStr = Annotated[str, StringConstraints(min_length=1, max_length=3)]
 CompanyCountryStr = Annotated[str, StringConstraints(min_length=2, max_length=100)]
@@ -29,6 +30,8 @@ class FlightCreate(BaseModel):
     departure_date: FlightDepartureDateStr
     arrival_date: FlightArrivalDate
     price: FlightPriceStr
+    business_seats: FlightSeatsInt = Field(default=0, description="Number of business class seats")
+    economy_seats: FlightSeatsInt = Field(default=0, description="Number of economy class seats")
     company_id: int
  
 class FlightUpdate(BaseModel):
@@ -41,6 +44,8 @@ class FlightUpdate(BaseModel):
     departure_date: FlightDepartureDateStr
     arrival_date: FlightArrivalDate
     price: FlightPriceStr
+    business_seats: FlightSeatsInt = Field(default=0, description="Number of business class seats")
+    economy_seats: FlightSeatsInt = Field(default=0, description="Number of economy class seats")
     company_id: int
 
 class FlightPatch(BaseModel):
@@ -53,6 +58,8 @@ class FlightPatch(BaseModel):
     departure_date: Optional[FlightDepartureDateStr] = None
     arrival_date: Optional[FlightArrivalDate] = None
     price: Optional[FlightPriceStr] = None
+    business_seats: Optional[FlightSeatsInt] = None
+    economy_seats: Optional[FlightSeatsInt] = None
     company_id: Optional[int] = None
  
 class FlightRead(BaseModel):
@@ -67,6 +74,8 @@ class FlightRead(BaseModel):
     departure_date: FlightDepartureDateStr
     arrival_date: FlightArrivalDate
     price: FlightPriceStr
+    business_seats: int
+    economy_seats: int
     company_id: int
 
 
@@ -100,6 +109,8 @@ class FlightCreateForCompany(BaseModel):
     departure_date: FlightDepartureDateStr
     arrival_date: FlightArrivalDate
     price: FlightPriceStr
+    business_seats: FlightSeatsInt = Field(default=0, description="Number of business class seats")
+    economy_seats: FlightSeatsInt = Field(default=0, description="Number of economy class seats")
  
 class CompanyUpdate(BaseModel):
     code: Optional[CompanyAirlineCodeStr] = None

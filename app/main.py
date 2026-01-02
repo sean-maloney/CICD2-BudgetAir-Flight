@@ -139,6 +139,18 @@ def list_flights(db:Session = Depends(get_db)):
   )
   return db.execute(stmt).scalars().all()
 
+@app.get("/api/flights/search", response_model=list[FlightRead])
+def search_flights(origin: str = None, destination: str = None, db: Session = Depends(get_db)):
+  stmt = select(FlightDB)
+  
+  if origin:
+    stmt = stmt.where(FlightDB.origin.ilike(f"%{origin}%"))
+  if destination:
+    stmt = stmt.where(FlightDB.destination.ilike(f"%{destination}%"))
+  
+  stmt = stmt.order_by(FlightDB.id)
+  return db.execute(stmt).scalars().all()
+
 #get flight with company
 @app.get("/api/flights/{flight_id}",response_model=FlightReadWithCompany)
 def get_flight(flight_id: int, db:Session=Depends(get_db)):
@@ -186,6 +198,8 @@ def update_flight(flight_id: int, updated: FlightUpdate, db: Session = Depends(g
   flight.departure_date = updated.departure_date
   flight.arrival_date = updated.arrival_date
   flight.price = updated.price
+  flight.business_seats = updated.business_seats
+  flight.economy_seats = updated.economy_seats
   flight.company_id = updated.company_id
 
   try:
