@@ -1,12 +1,13 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, ForeignKey
+from sqlalchemy import String, Integer, ForeignKey, DateTime
+from sqlalchemy.sql import func
+from datetime import datetime
 from typing import Optional, List
  
  
 class Base(DeclarativeBase):
     pass
  
- #user database model
 class FlightDB(Base):
     __tablename__ = "flights"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -33,5 +34,24 @@ class CompanyDB(Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=False)
     flights: Mapped[List["FlightDB"]] = relationship(back_populates="company",cascade="all, delete-orphan")
-    
+
+class BookingDB(Base):
+    __tablename__ = "bookings"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    flight_id: Mapped[str] = mapped_column(String(8), nullable=False)
+    flight_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    origin: Mapped[str] = mapped_column(String(32), nullable=False)
+    destination: Mapped[str] = mapped_column(String(255), nullable=False)
+    departure_time: Mapped[str] = mapped_column(String(5), nullable=False)
+    arrival_time: Mapped[str] = mapped_column(String(5), nullable=False)
+    departure_date: Mapped[str] = mapped_column(String(10), nullable=False)
+    arrival_date: Mapped[str] = mapped_column(String(10), nullable=False)
+    price: Mapped[str] = mapped_column(String(10), nullable=False)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    payment_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    paid_at: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
